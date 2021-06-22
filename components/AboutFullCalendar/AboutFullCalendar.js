@@ -11,7 +11,12 @@ import { Layout } from 'antd';
 import { useHistory } from 'react-router-dom';
 import useStore from '../../useStore';
 import { useObserver } from 'mobx-react-lite';
+import Modal from 'react-modal';
+Modal.setAppElement('#root');
+
 const AboutFullCalendar = () => {
+
+    const [visible, setVisible] = useState(false);
     
     const history = useHistory();
     //! LOCAL STATE PART
@@ -44,13 +49,31 @@ const AboutFullCalendar = () => {
         console.log('info :',info);
         console.log('info.view.calendar :',info.view.calendar);
 
-        CalendarStore.clickedDate = info.startStr;
+        //? 우선은 info.startStr값으로 
+        CalendarStore.setClickedDate(info.startStr);
+        CalendarStore.setClickedDateList(info.startStr);
+        
+        setVisible(true);
     }
+
+    const renderClickedDateList = (list)=>{
+        return(
+            list.map((item,index)=>(
+            <span key={index}>
+                {item} ,
+            </span>
+            ))
+        );
+    }
+        
+    
+        
     return useObserver(()=>(
-<>
+        <>
             <CalendarHeader/>
             <CalendarContent>
-                <Layout>
+                {/*Layout Css효과 */}
+                <Layout style={{position:"relative", zIndex:0}}> 
                 <FullCalendar
                 ref={mainRef}
                 plugins={[
@@ -71,12 +94,20 @@ const AboutFullCalendar = () => {
                 />
                 </Layout>
             </CalendarContent>
+            <StyleModal
+                isOpen = {visible}
+            >
+                <StyleModalTitle>
+                    <button/>
+                    <hr/>
+                </StyleModalTitle>   
+            </StyleModal>
             <TempCalendarInfo>
                 <TempField>
                     <legend>Temp Calendar Info [state from MobX Calendar Store] </legend>
-                    <span>현재 클릭된 date: {CalendarStore.clickedDate}</span>
+                    <span> * 현재 클릭된 날짜: {CalendarStore.clickedDate}</span>
                     <br />
-                    <span>지금까지 클릭된dateList: </span>
+                    <> * 지금까지 클릭된 날짜 리스트: {renderClickedDateList(CalendarStore.clickedDateList)}</>
                 </TempField>
             </TempCalendarInfo>
         </>
@@ -108,3 +139,14 @@ const TempField = styled.fieldset`
     width: 100%;    
     height: 25vh;
 `;
+const StyleModal = styled(Modal)`
+    width:35rem;
+    height:30rem;
+    background:#333;
+    zIndex:100;
+`
+const StyleModalTitle = styled.div`
+    width:100%;
+    height:9%;
+    
+`
